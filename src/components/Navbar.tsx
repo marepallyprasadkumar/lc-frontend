@@ -1,5 +1,6 @@
-import { Link, useLocation } from "@tanstack/react-router";
-import { useState } from "react";
+import { Link, useLocation, useNavigate } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { getCurrentUser, logout } from "@/lib/auth";
 
 const navLinks = [
   { to: "/", label: "Explore" },
@@ -10,7 +11,21 @@ const navLinks = [
 
 export function Navbar() {
   const location = useLocation();
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
+  const [user, setUser] = useState(getCurrentUser());
+
+  useEffect(() => {
+    const onStorage = () => setUser(getCurrentUser());
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
+
+  const onLogout = () => {
+    logout();
+    setUser(null);
+    navigate({ to: "/" });
+  };
 
   return (
     <nav className="sticky top-0 z-50 flex h-12 items-center border-b border-nav-border bg-nav px-4">
@@ -60,12 +75,26 @@ export function Navbar() {
           <Link to="/dashboard" className="rounded-md px-3 py-1.5 text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground">
             Dashboard
           </Link>
-          <Link
-            to="/login"
-            className="rounded-md bg-primary px-3.5 py-1.5 text-[13px] font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
-          >
-            Sign In
-          </Link>
+
+          {user ? (
+            <>
+              <span className="text-xs text-muted-foreground">{user.username}</span>
+              <button
+                onClick={onLogout}
+                className="rounded-md border border-border px-3 py-1.5 text-[13px] font-semibold text-foreground"
+              >
+                Logout
+              </button>
+            </>
+          ) : (
+            <Link
+              to="/login"
+              search={{ next: location.pathname }}
+              className="rounded-md bg-primary px-3.5 py-1.5 text-[13px] font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+            >
+              Sign In
+            </Link>
+          )}
         </div>
       </div>
     </nav>
