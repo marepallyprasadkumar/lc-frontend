@@ -1,17 +1,13 @@
 import type { Status } from "@/lib/problems-data";
 
-export function StatusIcon({ status }: { status: Status }) {
+export function StatusIcon({ status }: { status?: string }) {
   if (status === "solved") {
-    return (
-      <svg className="h-4 w-4 text-easy" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
-        <path d="M20 6 9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-    );
+    return <span className="text-green-400">✔</span>;
   }
+
   if (status === "attempted") {
-    return (
-      <div className="h-2.5 w-2.5 rounded-full border-2 border-medium" />
-    );
+    return <span className="text-yellow-400">●</span>;
   }
-  return <div className="h-4 w-4" />;
+
+  return <span className="text-gray-500">○</span>;
 }

@@ -1,7 +1,20 @@
 import { Link } from "@tanstack/react-router";
-import type { Problem } from "@/lib/problems-data";
 import { DifficultyBadge } from "./DifficultyBadge";
 import { StatusIcon } from "./StatusIcon";
+
+// ✅ INCLUDE "unsolved"
+type Status = "solved" | "attempted" | "unsolved";
+
+interface Problem {
+  id: number;
+  title: string;
+  slug: string;
+  difficulty: "Easy" | "Medium" | "Hard";
+  status?: string;
+
+  acceptance_rate?: number;
+  acceptanceRate?: number;
+}
 
 interface ProblemTableProps {
   problems: Problem[];
@@ -10,7 +23,12 @@ interface ProblemTableProps {
   onPageChange: (page: number) => void;
 }
 
-export function ProblemTable({ problems, currentPage, totalPages, onPageChange }: ProblemTableProps) {
+export function ProblemTable({
+  problems,
+  currentPage,
+  totalPages,
+  onPageChange,
+}: ProblemTableProps) {
   return (
     <div className="flex-1">
       <table className="w-full">
@@ -22,34 +40,54 @@ export function ProblemTable({ problems, currentPage, totalPages, onPageChange }
             <th className="w-28 pb-3 pr-4 text-right">Acceptance</th>
           </tr>
         </thead>
+
         <tbody>
-          {problems.map((problem, i) => (
-            <tr
-              key={problem.id}
-              className={`border-b border-border/50 transition-colors hover:bg-surface-hover ${
-                i % 2 === 0 ? "bg-transparent" : "bg-surface/40"
-              }`}
-            >
-              <td className="py-3 pl-4">
-                <StatusIcon status={problem.status} />
-              </td>
-              <td className="py-3 pl-4">
-                <Link
-                  to="/problems/$problemId"
-                  params={{ problemId: String(problem.id) }}
-                  className="text-sm text-foreground transition-colors hover:text-primary"
-                >
-                  {problem.id}. {problem.title}
-                </Link>
-              </td>
-              <td className="py-3">
-                <DifficultyBadge difficulty={problem.difficulty} />
-              </td>
-              <td className="py-3 pr-4 text-right text-sm text-muted-foreground">
-                {problem.acceptance.toFixed(1)}%
-              </td>
-            </tr>
-          ))}
+          {problems.map((problem, i) => {
+            const acceptance =
+              problem.acceptanceRate ??
+              problem.acceptance_rate ??
+              0;
+
+            // ✅ PROPER NORMALIZATION (VERY IMPORTANT)
+            const safeStatus: Status =
+              problem.status === "solved"
+                ? "solved"
+                : problem.status === "attempted"
+                ? "attempted"
+                : "unsolved";
+
+            return (
+              <tr
+                key={problem.id}
+                className={`border-b border-border/50 transition-colors hover:bg-surface-hover ${
+                  i % 2 === 0 ? "bg-transparent" : "bg-surface/40"
+                }`}
+              >
+                <td className="py-3 pl-4">
+                  {/* ✅ PASS FULL STATUS */}
+                  <StatusIcon status={safeStatus} />
+                </td>
+
+                <td className="py-3 pl-4">
+                  <Link
+                    to="/problems/$problemId"
+                    params={{ problemId: problem.slug }}
+                    className="text-sm text-foreground transition-colors hover:text-primary"
+                  >
+                    {problem.id}. {problem.title}
+                  </Link>
+                </td>
+
+                <td className="py-3">
+                  <DifficultyBadge difficulty={problem.difficulty} />
+                </td>
+
+                <td className="py-3 pr-4 text-right text-sm text-muted-foreground">
+                  {Number(acceptance).toFixed(1)}%
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
 
@@ -58,15 +96,16 @@ export function ProblemTable({ problems, currentPage, totalPages, onPageChange }
           <button
             onClick={() => onPageChange(currentPage - 1)}
             disabled={currentPage === 1}
-            className="rounded px-2 py-1 text-xs text-muted-foreground transition-colors hover:text-foreground disabled:opacity-30"
+            className="rounded px-2 py-1 text-xs text-muted-foreground hover:text-foreground disabled:opacity-30"
           >
             ← Prev
           </button>
+
           {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
             <button
               key={page}
               onClick={() => onPageChange(page)}
-              className={`h-7 w-7 rounded text-xs transition-colors ${
+              className={`h-7 w-7 rounded text-xs ${
                 page === currentPage
                   ? "bg-primary text-primary-foreground"
                   : "text-muted-foreground hover:bg-surface-hover hover:text-foreground"
@@ -75,10 +114,11 @@ export function ProblemTable({ problems, currentPage, totalPages, onPageChange }
               {page}
             </button>
           ))}
+
           <button
             onClick={() => onPageChange(currentPage + 1)}
             disabled={currentPage === totalPages}
-            className="rounded px-2 py-1 text-xs text-muted-foreground transition-colors hover:text-foreground disabled:opacity-30"
+            className="rounded px-2 py-1 text-xs text-muted-foreground hover:text-foreground disabled:opacity-30"
           >
             Next →
           </button>
