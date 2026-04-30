@@ -1,162 +1,142 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
-import { getProblems } from "@/lib/api";
+import { createFileRoute } from "@tanstack/react-router";
+import { CalendarDays, ExternalLink, Globe2, Trophy } from "lucide-react";
 
 export const Route = createFileRoute("/contest")({
+  head: () => ({
+    meta: [
+      { title: "Real-World Contests - Coding Platform" },
+      { name: "description", content: "Discover real-world coding contests from popular competitive programming platforms." },
+    ],
+  }),
   component: ContestPage,
 });
 
-const API = import.meta.env.VITE_API_URL ?? "http://localhost:5000";
-
-type LeaderboardRow = {
-  userId: number;
-  username: string;
-  solved: number;
-  score: number;
-  penalty: number;
-  lastAcceptedAt: string | null;
-};
+const contestPlatforms = [
+  {
+    name: "Codeforces",
+    url: "https://codeforces.com/contests",
+    type: "Rated rounds and educational rounds",
+    schedule: "Frequent global contests",
+    bestFor: "Competitive programming ratings, Div. 1/2/3 rounds, and virtual participation.",
+    accent: "border-sky-400/30 bg-sky-400/10 text-sky-300",
+  },
+  {
+    name: "LeetCode",
+    url: "https://leetcode.com/contest/",
+    type: "Weekly and biweekly contests",
+    schedule: "Weekly contest practice",
+    bestFor: "Interview-style contest problems and global ranking.",
+    accent: "border-medium/30 bg-medium/10 text-medium",
+  },
+  {
+    name: "CodeChef",
+    url: "https://www.codechef.com/contests",
+    type: "Starters and rated contests",
+    schedule: "Regular beginner to advanced contests",
+    bestFor: "Practice across divisions with long and short contest formats.",
+    accent: "border-primary/30 bg-primary/10 text-primary",
+  },
+  {
+    name: "AtCoder",
+    url: "https://atcoder.jp/contests/?lang=en",
+    type: "ABC, ARC, AGC, and heuristic contests",
+    schedule: "Upcoming contests listed live",
+    bestFor: "High-quality algorithmic problems with consistent contest structure.",
+    accent: "border-violet-400/30 bg-violet-400/10 text-violet-300",
+  },
+  {
+    name: "HackerRank",
+    url: "https://www.hackerrank.com/contests",
+    type: "Coding competitions and archived contests",
+    schedule: "Active and archived contests",
+    bestFor: "Contest practice, college events, and challenge-based scoring.",
+    accent: "border-easy/30 bg-easy/10 text-easy",
+  },
+  {
+    name: "HackerEarth",
+    url: "https://www.hackerearth.com/challenges/",
+    type: "Programming challenges, hackathons, and hiring contests",
+    schedule: "Live and upcoming challenges",
+    bestFor: "Competitive challenges, hackathons, hiring events, and university contests.",
+    accent: "border-hard/30 bg-hard/10 text-hard",
+  },
+];
 
 function ContestPage() {
-  const [problems, setProblems] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [completedMap, setCompletedMap] = useState<Record<string, boolean>>({});
-  const [leaderboard, setLeaderboard] = useState<LeaderboardRow[]>([]);
-  const [boardLoading, setBoardLoading] = useState(true);
-
-  const problemIds = useMemo(() => problems.map((p) => Number(p.id)).filter((n) => Number.isFinite(n)), [problems]);
-
-  useEffect(() => {
-    getProblems()
-      .then((all) => {
-        const picked = all.slice(0, 30);
-        setProblems(picked);
-
-        const status: Record<string, boolean> = {};
-        picked.forEach((p: any) => {
-          status[p.slug] = localStorage.getItem(`contest_status_${p.slug}`) === "completed";
-        });
-        setCompletedMap(status);
-      })
-      .catch(console.error)
-      .finally(() => setLoading(false));
-  }, []);
-
-  useEffect(() => {
-    if (problemIds.length === 0) {
-      setLeaderboard([]);
-      setBoardLoading(false);
-      return;
-    }
-
-    let mounted = true;
-
-    const loadBoard = async () => {
-      setBoardLoading(true);
-      try {
-        const query = encodeURIComponent(problemIds.join(","));
-        const res = await fetch(`${API}/api/code/leaderboard?problemIds=${query}`);
-        const json = await res.json();
-        if (!mounted) return;
-        setLeaderboard(Array.isArray(json.data) ? json.data : []);
-      } catch {
-        if (!mounted) return;
-        setLeaderboard([]);
-      } finally {
-        if (mounted) setBoardLoading(false);
-      }
-    };
-
-    loadBoard();
-    const timer = window.setInterval(loadBoard, 15000);
-
-    return () => {
-      mounted = false;
-      window.clearInterval(timer);
-    };
-  }, [problemIds]);
-
   return (
-    <div className="mx-auto max-w-6xl px-6 py-10">
-      <h1 className="text-3xl font-bold text-foreground">Coding Assessment</h1>
-      <p className="mt-2 text-sm text-muted-foreground">Contest runs in fullscreen with strict anti-cheat controls.</p>
-
-      <div className="mt-6 rounded-lg border border-border p-4">
-        <h2 className="text-lg font-semibold">Instructions</h2>
-        <ul className="mt-2 list-disc pl-5 text-sm text-muted-foreground">
-          <li>Only Run, Submit, Timer, Exit, Description and Testcases are visible.</li>
-          <li>Tab switch / copy-paste / fullscreen exit locks the contest.</li>
-          <li>Locked or timed-out contests are marked as completed.</li>
-        </ul>
-      </div>
-
-      <div className="mt-8">
-        <h2 className="text-xl font-semibold">Problems ({problems.length})</h2>
-        {loading ? (
-          <p className="mt-3 text-sm text-muted-foreground">Loading contest problems...</p>
-        ) : problems.length === 0 ? (
-          <p className="mt-3 text-sm text-muted-foreground">No problems available.</p>
-        ) : (
-          <div className="mt-3 space-y-3">
-            {problems.map((p) => (
-              <div key={p.slug} className="flex items-center justify-between rounded border border-border p-3">
-                <div>
-                  <p className="font-medium">{p.title}</p>
-                  <p className="text-xs text-muted-foreground">{p.difficulty}</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  {completedMap[p.slug] && (
-                    <span className="rounded border border-green-700 bg-green-900/40 px-2 py-1 text-xs font-semibold text-green-300">Completed</span>
-                  )}
-                  <Link to="/problems/$problemId" params={{ problemId: p.slug }} search={{ mode: "contest" }} className="rounded bg-primary px-3 py-1.5 text-sm font-semibold text-primary-foreground">
-                    {completedMap[p.slug] ? "View" : "Start"}
-                  </Link>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      <div className="mt-10 rounded-xl border border-border bg-card p-5">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xl font-semibold">Leaderboard</h2>
-          <span className="text-xs text-muted-foreground">Auto refresh: 15s</span>
+    <main className="mx-auto max-w-7xl px-6 py-10">
+      <section className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wide text-primary">Contest hub</p>
+          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-foreground">Real-World Coding Contests</h1>
+          <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
+            Explore live and upcoming contests from popular competitive programming platforms. Use this page to discover external contests, register on the official platform, and continue practice here.
+          </p>
         </div>
 
-        {boardLoading ? (
-          <p className="mt-4 text-sm text-muted-foreground">Loading leaderboard...</p>
-        ) : leaderboard.length === 0 ? (
-          <p className="mt-4 text-sm text-muted-foreground">No submissions yet for this contest set.</p>
-        ) : (
-          <div className="mt-4 overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-border text-left text-muted-foreground">
-                  <th className="py-2">Rank</th>
-                  <th className="py-2">User</th>
-                  <th className="py-2">Solved</th>
-                  <th className="py-2">Score</th>
-                  <th className="py-2">Penalty</th>
-                  <th className="py-2">Last Accepted</th>
-                </tr>
-              </thead>
-              <tbody>
-                {leaderboard.map((row, idx) => (
-                  <tr key={`${row.userId}-${idx}`} className="border-b border-border/60">
-                    <td className="py-2 font-semibold">#{idx + 1}</td>
-                    <td className="py-2">{row.username}</td>
-                    <td className="py-2">{row.solved}</td>
-                    <td className="py-2">{row.score}</td>
-                    <td className="py-2">{row.penalty}</td>
-                    <td className="py-2">{row.lastAcceptedAt ? new Date(row.lastAcceptedAt).toLocaleString() : "-"}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        <div className="rounded-md border border-border bg-card px-4 py-3">
+          <p className="flex items-center gap-2 text-sm font-semibold text-foreground">
+            <Globe2 className="h-4 w-4 text-primary" />
+            External contest discovery
+          </p>
+          <p className="mt-1 text-xs text-muted-foreground">Links open official platforms.</p>
+        </div>
+      </section>
+
+      <section className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        {contestPlatforms.map((platform) => (
+          <article key={platform.name} className="rounded-md border border-border bg-card p-5">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <span className={`inline-flex rounded border px-2 py-1 text-[11px] font-semibold ${platform.accent}`}>
+                  {platform.type}
+                </span>
+                <h2 className="mt-4 text-xl font-semibold text-foreground">{platform.name}</h2>
+              </div>
+              <Trophy className="h-5 w-5 text-primary" />
+            </div>
+
+            <div className="mt-4 space-y-3">
+              <div className="flex gap-3 rounded border border-border bg-background p-3">
+                <CalendarDays className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+                <div>
+                  <p className="text-xs font-semibold text-foreground">Contest schedule</p>
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground">{platform.schedule}</p>
+                </div>
+              </div>
+
+              <p className="min-h-16 text-sm leading-6 text-muted-foreground">{platform.bestFor}</p>
+            </div>
+
+            <a
+              href={platform.url}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-md bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
+            >
+              Open Official Contests <ExternalLink className="h-4 w-4" />
+            </a>
+          </article>
+        ))}
+      </section>
+
+      <section className="mt-8 rounded-md border border-border bg-card p-5">
+        <h2 className="text-lg font-semibold text-foreground">How this module supports the project</h2>
+        <div className="mt-4 grid gap-4 md:grid-cols-3">
+          <div className="rounded-md border border-border bg-background p-4">
+            <p className="text-sm font-semibold text-foreground">Contest awareness</p>
+            <p className="mt-2 text-xs leading-5 text-muted-foreground">Users can find real competitions instead of only solving local practice questions.</p>
           </div>
-        )}
-      </div>
-    </div>
+          <div className="rounded-md border border-border bg-background p-4">
+            <p className="text-sm font-semibold text-foreground">Practice bridge</p>
+            <p className="mt-2 text-xs leading-5 text-muted-foreground">Users can prepare on this platform and then participate in official external contests.</p>
+          </div>
+          <div className="rounded-md border border-border bg-background p-4">
+            <p className="text-sm font-semibold text-foreground">Professional scope</p>
+            <p className="mt-2 text-xs leading-5 text-muted-foreground">The module connects the project with real competitive programming ecosystems.</p>
+          </div>
+        </div>
+      </section>
+    </main>
   );
 }

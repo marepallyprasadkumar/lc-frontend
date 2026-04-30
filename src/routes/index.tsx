@@ -1,10 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { ArrowRight, Brain, Code2, ShieldCheck, Trophy } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "CodeArena — Master Coding Challenges" },
-      { name: "description", content: "Practice algorithms, data structures, and coding interviews with CodeArena." },
+      { title: "Coding Platform" },
+      { name: "description", content: "Practice problems, run code, join contests, and learn with guided hints." },
     ],
   }),
   component: HomePage,
@@ -12,68 +13,44 @@ export const Route = createFileRoute("/")({
 
 function HomePage() {
   return (
-    <div className="mx-auto max-w-5xl px-6 py-20">
-      <div className="text-center">
-        <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/5 px-4 py-1.5 text-xs font-medium text-primary">
-          <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-          Over 2,500+ problems available
+    <main className="mx-auto max-w-7xl px-6 py-10">
+      <section className="flex min-h-[calc(100vh-9rem)] flex-col justify-center">
+        <div className="max-w-4xl">
+          <p className="text-xs font-semibold uppercase tracking-wide text-primary">Coding platform</p>
+          <h1 className="mt-4 text-4xl font-semibold leading-tight tracking-tight text-foreground lg:text-6xl">
+            Practice, compete, and improve problem-solving skills.
+          </h1>
+          <p className="mt-5 max-w-2xl text-base leading-7 text-muted-foreground">
+            A focused coding platform with curated problems, real code execution, hidden test evaluation, contest mode, and guided learning support for practice.
+          </p>
+
+          <div className="mt-8 flex flex-wrap gap-3">
+            <Link to="/problems" className="inline-flex items-center gap-2 rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90">
+              Start Solving <ArrowRight className="h-4 w-4" />
+            </Link>
+            <Link to="/contest" className="rounded-md border border-border px-5 py-2.5 text-sm font-semibold text-foreground hover:bg-surface-hover">
+              Contest Mode
+            </Link>
+          </div>
         </div>
 
-        <h1 className="text-5xl font-bold leading-tight tracking-tight text-foreground">
-          A Better Way to <br />
-          <span className="text-primary">Prepare for Coding Interviews</span>
-        </h1>
-
-        <p className="mx-auto mt-6 max-w-xl text-base text-muted-foreground">
-          Solve curated problems, track your progress, and sharpen your skills
-          across algorithms, data structures, and system design.
-        </p>
-
-        <div className="mt-10 flex items-center justify-center gap-4">
-          <Link
-            to="/problems"
-            className="rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground transition-all hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/20"
-          >
-            Start Solving
-          </Link>
-          <Link
-            to="/problems"
-            className="rounded-lg border border-border px-6 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-surface-hover"
-          >
-            Explore Problems
-          </Link>
+        <div className="mt-14 grid gap-4 md:grid-cols-4">
+          {[
+            { icon: Code2, title: "Online judge", desc: "Run and submit code against sample and hidden test cases." },
+            { icon: Brain, title: "Guided hints", desc: "Beginner, intermediate, and advanced hints for learning." },
+            { icon: ShieldCheck, title: "Exam control", desc: "Fullscreen contest mode keeps assessments focused." },
+            { icon: Trophy, title: "Progress tracking", desc: "Dashboard, submissions, streaks, and topic progress." },
+          ].map((item) => (
+            <div key={item.title} className="rounded-md border border-border bg-card p-4">
+              <div className="flex h-9 w-9 items-center justify-center rounded-md border border-border bg-background text-primary">
+                <item.icon className="h-4 w-4" />
+              </div>
+              <h2 className="mt-4 text-sm font-semibold text-foreground">{item.title}</h2>
+              <p className="mt-2 text-xs leading-5 text-muted-foreground">{item.desc}</p>
+            </div>
+          ))}
         </div>
-      </div>
-
-      {/* Stats */}
-      <div className="mt-24 grid grid-cols-3 gap-6">
-        {[
-          { label: "Problems", value: "2,500+", sub: "Across all difficulty levels" },
-          { label: "Active Users", value: "150K+", sub: "Growing community" },
-          { label: "Submissions", value: "10M+", sub: "Solutions submitted daily" },
-        ].map((stat) => (
-          <div key={stat.label} className="rounded-xl border border-border bg-card p-6 text-center transition-colors hover:border-primary/30">
-            <div className="text-3xl font-bold text-foreground">{stat.value}</div>
-            <div className="mt-1 text-sm font-medium text-primary">{stat.label}</div>
-            <div className="mt-1 text-xs text-muted-foreground">{stat.sub}</div>
-          </div>
-        ))}
-      </div>
-
-      {/* Features */}
-      <div className="mt-20 grid grid-cols-3 gap-6">
-        {[
-          { icon: "📝", title: "Rich Problem Set", desc: "Curated problems from easy to hard covering all major topics." },
-          { icon: "⚡", title: "Instant Feedback", desc: "Run code and get results instantly with our powerful judge." },
-          { icon: "📊", title: "Track Progress", desc: "Detailed stats and streaks to keep you motivated." },
-        ].map((f) => (
-          <div key={f.title} className="rounded-xl border border-border bg-card p-6 transition-colors hover:border-primary/30">
-            <div className="text-2xl">{f.icon}</div>
-            <h3 className="mt-3 text-sm font-semibold text-foreground">{f.title}</h3>
-            <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">{f.desc}</p>
-          </div>
-        ))}
-      </div>
-    </div>
+      </section>
+    </main>
   );
 }

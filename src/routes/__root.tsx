@@ -3,6 +3,9 @@ import { Navbar } from "@/components/Navbar";
 
 import appCss from "../styles.css?url";
 
+const faviconSvg =
+  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%230d1117'/%3E%3Cpath d='M25 20 13 32l12 12M39 20l12 12-12 12' fill='none' stroke='%235ee27c' stroke-width='6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E";
+
 function NotFoundComponent() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
@@ -30,10 +33,11 @@ export const Route = createRootRoute({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "CodeArena — Practice Coding Problems" },
-      { name: "description", content: "Master algorithms and data structures with CodeArena's curated coding challenges." },
+      { title: "Coding Platform" },
+      { name: "description", content: "Practice coding problems, run solutions, and participate in coding assessments." },
     ],
     links: [
+      { rel: "icon", type: "image/svg+xml", href: faviconSvg },
       { rel: "stylesheet", href: appCss },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" },

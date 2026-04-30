@@ -1,15 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState, useMemo, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { getProblems } from "@/lib/api";
-import { ProblemTable } from "@/components/ProblemTable";
 import { ProblemFilters } from "@/components/ProblemFilters";
+import { ProblemTable } from "@/components/ProblemTable";
 
-const PAGE_SIZE = 15;
+const PAGE_SIZE = 12;
 
 export const Route = createFileRoute("/problems/")({
   head: () => ({
     meta: [
-      { title: "Problems — CodeArena" },
+      { title: "Problems - CodeArena" },
       {
         name: "description",
         content: "Browse and solve coding problems by difficulty and topic.",
@@ -22,75 +22,34 @@ export const Route = createFileRoute("/problems/")({
 function ProblemsPage() {
   const [problems, setProblems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-
-  const [difficulty, setDifficulty] = useState<
-    "Easy" | "Medium" | "Hard" | "All"
-  >("All");
+  const [difficulty, setDifficulty] = useState<"Easy" | "Medium" | "Hard" | "All">("All");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [page, setPage] = useState(1);
 
-  // ✅ FIXED FETCH
   useEffect(() => {
     getProblems()
-      .then((data) => {
-        console.log("PROBLEMS:", data); // debug
-        setProblems(data); // ✅ IMPORTANT FIX
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error("Fetch error:", err);
-        setLoading(false);
-      });
+      .then((data) => setProblems(data))
+      .catch(() => setProblems([]))
+      .finally(() => setLoading(false));
   }, []);
 
-  // Extract tags
   const allTags = useMemo(() => {
     const tagSet = new Set<string>();
-    problems.forEach((p) =>
-      (p.tags || []).forEach((t: string) => tagSet.add(t))
-    );
-    return Array.from(tagSet);
+    problems.forEach((p) => (p.tags || []).forEach((tag: string) => tagSet.add(tag)));
+    return Array.from(tagSet).sort();
   }, [problems]);
 
-  // Filtering
   const filtered = useMemo(() => {
-    return problems.filter((p) => {
-      if (difficulty !== "All" && p.difficulty !== difficulty) return false;
-
-      if (
-        selectedTags.length > 0 &&
-        !(p.tags || []).some((t: string) => selectedTags.includes(t))
-      ) {
-        return false;
-      }
-
+    return problems.filter((problem) => {
+      if (difficulty !== "All" && problem.difficulty !== difficulty) return false;
+      if (selectedTags.length > 0 && !(problem.tags || []).some((tag: string) => selectedTags.includes(tag))) return false;
       return true;
     });
   }, [problems, difficulty, selectedTags]);
 
-  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
-  const paginated = filtered.slice(
-    (page - 1) * PAGE_SIZE,
-    page * PAGE_SIZE
-  );
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
-  const handleTagToggle = (tag: string) => {
-    setSelectedTags((prev) =>
-      prev.includes(tag)
-        ? prev.filter((t) => t !== tag)
-        : [...prev, tag]
-    );
-    setPage(1);
-  };
-
-  const handleDifficultyChange = (
-    d: "Easy" | "Medium" | "Hard" | "All"
-  ) => {
-    setDifficulty(d);
-    setPage(1);
-  };
-
-  // Counts
   const counts = useMemo(
     () => ({
       total: problems.length,
@@ -101,48 +60,52 @@ function ProblemsPage() {
     [problems]
   );
 
-  // Loading UI
+  const handleTagToggle = (tag: string) => {
+    setSelectedTags((prev) => (prev.includes(tag) ? prev.filter((item) => item !== tag) : [...prev, tag]));
+    setPage(1);
+  };
+
+  const handleDifficultyChange = (value: "Easy" | "Medium" | "Hard" | "All") => {
+    setDifficulty(value);
+    setPage(1);
+  };
+
   if (loading) {
-    return <div className="p-6">Loading...</div>;
+    return <div className="p-6 text-sm text-muted-foreground">Loading problems...</div>;
   }
 
   return (
-    <div className="mx-auto max-w-6xl px-6 py-8">
-      <div className="mb-6">
-        <h1 className="text-lg font-bold text-foreground">Problems</h1>
+    <div className="mx-auto max-w-7xl px-6 py-8">
+      <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wide text-primary">Practice library</p>
+          <h1 className="mt-1 text-2xl font-semibold tracking-tight text-foreground">Problems</h1>
+          <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+            Curated DSA problems with sample and hidden test cases for real judge-style evaluation.
+          </p>
+        </div>
 
-        <div className="mt-2 flex gap-4 text-xs text-muted-foreground">
-          <span>
-            All{" "}
-            <span className="text-foreground font-medium">
-              {counts.total}
-            </span>
-          </span>
-
-          <span>
-            Easy{" "}
-            <span className="text-easy font-medium">
-              {counts.easy}
-            </span>
-          </span>
-
-          <span>
-            Medium{" "}
-            <span className="text-medium font-medium">
-              {counts.medium}
-            </span>
-          </span>
-
-          <span>
-            Hard{" "}
-            <span className="text-hard font-medium">
-              {counts.hard}
-            </span>
-          </span>
+        <div className="grid grid-cols-4 overflow-hidden rounded-md border border-border bg-surface text-center">
+          <div className="px-4 py-2">
+            <p className="text-lg font-semibold text-foreground">{counts.total}</p>
+            <p className="text-[11px] text-muted-foreground">All</p>
+          </div>
+          <div className="border-l border-border px-4 py-2">
+            <p className="text-lg font-semibold text-easy">{counts.easy}</p>
+            <p className="text-[11px] text-muted-foreground">Easy</p>
+          </div>
+          <div className="border-l border-border px-4 py-2">
+            <p className="text-lg font-semibold text-medium">{counts.medium}</p>
+            <p className="text-[11px] text-muted-foreground">Medium</p>
+          </div>
+          <div className="border-l border-border px-4 py-2">
+            <p className="text-lg font-semibold text-hard">{counts.hard}</p>
+            <p className="text-[11px] text-muted-foreground">Hard</p>
+          </div>
         </div>
       </div>
 
-      <div className="flex gap-8">
+      <div className="flex flex-col gap-6 lg:flex-row">
         <ProblemFilters
           selectedDifficulty={difficulty}
           onDifficultyChange={handleDifficultyChange}
