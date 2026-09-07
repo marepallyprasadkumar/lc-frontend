@@ -7,7 +7,7 @@ interface CodeEditorPanelProps {
 
 const languages = ["javascript", "python", "cpp", "java"] as const;
 const languageLabels: Record<string, string> = {
-  javascript: "JavaScript",
+  javascript: "JavaScriptandwherejs",
   python: "Python",
   cpp: "C++",
   java: "Java",
