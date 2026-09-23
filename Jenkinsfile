@@ -17,6 +17,18 @@ pipeline {
             }
         }
 
+        stage('Inspect File Structure') {
+            steps {
+                script {
+                    if (isUnix()) {
+                        sh 'find . -maxdepth 3 -not -path "*/node_modules/*" -not -path "*/.git/*"'
+                    } else {
+                        bat 'dir /s /b /a-d'
+                    }
+                }
+            }
+        }
+
         stage('Install Dependencies') {
             steps {
                 script {
@@ -44,7 +56,7 @@ pipeline {
 
     post {
         success {
-            echo 'Build succeeded! Commit changes recorded.'
+            echo 'Build succeeded! Commit changes and file structure recorded.'
         }
         failure {
             echo 'Build failed! Please check logs.'
