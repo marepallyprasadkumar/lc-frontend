@@ -1,5 +1,12 @@
 export type Difficulty = "Easy" | "Medium" | "Hard";
 export type Status = "solved" | "attempted" | "unsolved";
+export type RecencyPeriod = "30_days" | "6_months" | "1_year" | "all_time";
+
+export interface CompanyTag {
+  company: string;
+  frequency: number; // 1-100
+  recency: RecencyPeriod;
+}
 
 export interface Problem {
   id: number;
@@ -9,6 +16,9 @@ export interface Problem {
   acceptance: number;
   status: Status;
   tags: string[];
+  companies?: CompanyTag[];
+  frequencyScore?: number; // 1-100
+  flameRating?: 1 | 2 | 3; // 3 = Top 🔥🔥🔥, 2 = High 🔥🔥, 1 = Frequent 🔥
 }
 
 export interface ProblemExample {
@@ -32,17 +42,185 @@ export interface ProblemDetail {
   hints: string[];
 }
 
+export const supportedCompanies = [
+  { name: "Google", color: "from-blue-500/20 to-red-500/20 text-blue-400 border-blue-500/30" },
+  { name: "Meta", color: "from-blue-600/20 to-sky-500/20 text-sky-400 border-sky-500/30" },
+  { name: "Amazon", color: "from-amber-500/20 to-orange-500/20 text-amber-400 border-amber-500/30" },
+  { name: "Microsoft", color: "from-emerald-500/20 to-teal-500/20 text-emerald-400 border-emerald-500/30" },
+  { name: "Apple", color: "from-slate-400/20 to-zinc-500/20 text-zinc-300 border-zinc-400/30" },
+  { name: "Netflix", color: "from-red-600/20 to-rose-700/20 text-red-400 border-red-500/30" },
+  { name: "Uber", color: "from-gray-500/20 to-stone-600/20 text-stone-300 border-stone-400/30" },
+] as const;
+
 export const problems: Problem[] = [
-  { id: 1, title: "Two Sum", slug: "two-sum", difficulty: "Easy", acceptance: 52.4, status: "unsolved", tags: ["Array", "Hash Table"] },
-  { id: 3, title: "Longest Substring Without Repeating Characters", slug: "longest-substring-without-repeating-characters", difficulty: "Medium", acceptance: 34.5, status: "unsolved", tags: ["String", "Sliding Window"] },
-  { id: 20, title: "Valid Parentheses", slug: "valid-parentheses", difficulty: "Easy", acceptance: 40.5, status: "unsolved", tags: ["String", "Stack"] },
-  { id: 53, title: "Maximum Subarray", slug: "maximum-subarray", difficulty: "Medium", acceptance: 50.7, status: "unsolved", tags: ["Array", "Dynamic Programming"] },
-  { id: 70, title: "Climbing Stairs", slug: "climbing-stairs", difficulty: "Easy", acceptance: 52.3, status: "unsolved", tags: ["Math", "Dynamic Programming"] },
-  { id: 121, title: "Best Time to Buy and Sell Stock", slug: "best-time-to-buy-and-sell-stock", difficulty: "Easy", acceptance: 54.1, status: "unsolved", tags: ["Array", "Greedy"] },
-  { id: 200, title: "Number of Islands", slug: "number-of-islands", difficulty: "Medium", acceptance: 57.9, status: "unsolved", tags: ["DFS", "BFS", "Matrix"] },
-  { id: 238, title: "Product of Array Except Self", slug: "product-of-array-except-self", difficulty: "Medium", acceptance: 66.4, status: "unsolved", tags: ["Array", "Prefix Sum"] },
-  { id: 42, title: "Trapping Rain Water", slug: "trapping-rain-water", difficulty: "Hard", acceptance: 60.3, status: "unsolved", tags: ["Array", "Two Pointers", "Stack"] },
-  { id: 76, title: "Minimum Window Substring", slug: "minimum-window-substring", difficulty: "Hard", acceptance: 41.8, status: "unsolved", tags: ["String", "Sliding Window"] },
+  {
+    id: 1,
+    title: "Two Sum",
+    slug: "two-sum",
+    difficulty: "Easy",
+    acceptance: 52.4,
+    status: "unsolved",
+    tags: ["Array", "Hash Table"],
+    frequencyScore: 98,
+    flameRating: 3,
+    companies: [
+      { company: "Google", frequency: 98, recency: "30_days" },
+      { company: "Amazon", frequency: 95, recency: "30_days" },
+      { company: "Meta", frequency: 92, recency: "6_months" },
+      { company: "Microsoft", frequency: 89, recency: "6_months" },
+      { company: "Apple", frequency: 85, recency: "1_year" },
+    ],
+  },
+  {
+    id: 3,
+    title: "Longest Substring Without Repeating Characters",
+    slug: "longest-substring-without-repeating-characters",
+    difficulty: "Medium",
+    acceptance: 34.5,
+    status: "unsolved",
+    tags: ["String", "Sliding Window"],
+    frequencyScore: 94,
+    flameRating: 3,
+    companies: [
+      { company: "Amazon", frequency: 96, recency: "30_days" },
+      { company: "Google", frequency: 91, recency: "6_months" },
+      { company: "Meta", frequency: 88, recency: "30_days" },
+      { company: "Microsoft", frequency: 84, recency: "1_year" },
+    ],
+  },
+  {
+    id: 20,
+    title: "Valid Parentheses",
+    slug: "valid-parentheses",
+    difficulty: "Easy",
+    acceptance: 40.5,
+    status: "unsolved",
+    tags: ["String", "Stack"],
+    frequencyScore: 90,
+    flameRating: 2,
+    companies: [
+      { company: "Meta", frequency: 94, recency: "30_days" },
+      { company: "Amazon", frequency: 90, recency: "6_months" },
+      { company: "Google", frequency: 85, recency: "6_months" },
+      { company: "Apple", frequency: 80, recency: "1_year" },
+    ],
+  },
+  {
+    id: 53,
+    title: "Maximum Subarray",
+    slug: "maximum-subarray",
+    difficulty: "Medium",
+    acceptance: 50.7,
+    status: "unsolved",
+    tags: ["Array", "Dynamic Programming"],
+    frequencyScore: 86,
+    flameRating: 2,
+    companies: [
+      { company: "Microsoft", frequency: 92, recency: "30_days" },
+      { company: "Amazon", frequency: 87, recency: "6_months" },
+      { company: "Apple", frequency: 82, recency: "1_year" },
+    ],
+  },
+  {
+    id: 70,
+    title: "Climbing Stairs",
+    slug: "climbing-stairs",
+    difficulty: "Easy",
+    acceptance: 52.3,
+    status: "unsolved",
+    tags: ["Math", "Dynamic Programming"],
+    frequencyScore: 78,
+    flameRating: 1,
+    companies: [
+      { company: "Amazon", frequency: 82, recency: "6_months" },
+      { company: "Google", frequency: 75, recency: "1_year" },
+      { company: "Netflix", frequency: 70, recency: "all_time" },
+    ],
+  },
+  {
+    id: 121,
+    title: "Best Time to Buy and Sell Stock",
+    slug: "best-time-to-buy-and-sell-stock",
+    difficulty: "Easy",
+    acceptance: 54.1,
+    status: "unsolved",
+    tags: ["Array", "Greedy"],
+    frequencyScore: 93,
+    flameRating: 3,
+    companies: [
+      { company: "Amazon", frequency: 95, recency: "30_days" },
+      { company: "Meta", frequency: 91, recency: "30_days" },
+      { company: "Google", frequency: 88, recency: "6_months" },
+      { company: "Microsoft", frequency: 86, recency: "6_months" },
+    ],
+  },
+  {
+    id: 200,
+    title: "Number of Islands",
+    slug: "number-of-islands",
+    difficulty: "Medium",
+    acceptance: 57.9,
+    status: "unsolved",
+    tags: ["DFS", "BFS", "Matrix"],
+    frequencyScore: 96,
+    flameRating: 3,
+    companies: [
+      { company: "Amazon", frequency: 98, recency: "30_days" },
+      { company: "Google", frequency: 94, recency: "30_days" },
+      { company: "Uber", frequency: 92, recency: "6_months" },
+      { company: "Microsoft", frequency: 90, recency: "6_months" },
+    ],
+  },
+  {
+    id: 238,
+    title: "Product of Array Except Self",
+    slug: "product-of-array-except-self",
+    difficulty: "Medium",
+    acceptance: 66.4,
+    status: "unsolved",
+    tags: ["Array", "Prefix Sum"],
+    frequencyScore: 91,
+    flameRating: 3,
+    companies: [
+      { company: "Amazon", frequency: 93, recency: "30_days" },
+      { company: "Meta", frequency: 90, recency: "30_days" },
+      { company: "Apple", frequency: 87, recency: "6_months" },
+      { company: "Netflix", frequency: 84, recency: "1_year" },
+    ],
+  },
+  {
+    id: 42,
+    title: "Trapping Rain Water",
+    slug: "trapping-rain-water",
+    difficulty: "Hard",
+    acceptance: 60.3,
+    status: "unsolved",
+    tags: ["Array", "Two Pointers", "Stack"],
+    frequencyScore: 97,
+    flameRating: 3,
+    companies: [
+      { company: "Google", frequency: 97, recency: "30_days" },
+      { company: "Amazon", frequency: 96, recency: "30_days" },
+      { company: "Meta", frequency: 93, recency: "6_months" },
+      { company: "Uber", frequency: 89, recency: "6_months" },
+    ],
+  },
+  {
+    id: 76,
+    title: "Minimum Window Substring",
+    slug: "minimum-window-substring",
+    difficulty: "Hard",
+    acceptance: 41.8,
+    status: "unsolved",
+    tags: ["String", "Sliding Window"],
+    frequencyScore: 88,
+    flameRating: 2,
+    companies: [
+      { company: "Meta", frequency: 92, recency: "30_days" },
+      { company: "Google", frequency: 89, recency: "6_months" },
+      { company: "Microsoft", frequency: 85, recency: "1_year" },
+    ],
+  },
 ];
 
 export const allTags = Array.from(new Set(problems.flatMap((p) => p.tags))).sort();

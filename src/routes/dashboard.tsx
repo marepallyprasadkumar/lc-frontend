@@ -1,8 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Activity, CalendarDays, CheckCircle2, Flame, Target, Trophy } from "lucide-react";
+import { Activity, Brain, CalendarDays, CheckCircle2, ClipboardCheck, Flame, Target, Trophy, XCircle } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { getCurrentUser } from "@/lib/auth";
-import { getProblems } from "@/lib/api";
+import { getAssessmentOverview, getProblems, type AssessmentEvaluation, type AssessmentOverview } from "@/lib/api";
 
 export const Route = createFileRoute("/dashboard")({
   head: () => ({
@@ -41,6 +41,23 @@ const difficultyColors: Record<Difficulty, string> = {
   Hard: "bg-hard text-hard",
 };
 
+const emptyAssessmentOverview: AssessmentOverview = {
+  summary: {
+    totalTestCases: 0,
+    positiveTestCases: 0,
+    negativeTestCases: 0,
+    passedTestCases: 0,
+    failedTestCases: 0,
+  },
+  recentEvaluations: [],
+  breakdown: {
+    positive: { count: 0, recent: [] },
+    negative: { count: 0, recent: [] },
+  },
+  submissionResult: null,
+  aiLearningInsight: null,
+};
+
 function dateKey(date: Date) {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -67,21 +84,24 @@ function DashboardPage() {
   const user = getCurrentUser();
   const [problems, setProblems] = useState<any[]>([]);
   const [submissions, setSubmissions] = useState<Submission[]>([]);
+  const [assessment, setAssessment] = useState<AssessmentOverview>(emptyAssessmentOverview);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const load = async () => {
       setLoading(true);
       try {
-        const [problemData, submissionRes] = await Promise.all([
+        const [problemData, submissionRes, assessmentData] = await Promise.all([
           getProblems(),
           fetch(`${API}/api/code/submissions`),
+          getAssessmentOverview(),
         ]);
 
         const submissionData = submissionRes.ok ? await submissionRes.json() : [];
 
         setProblems(problemData || []);
         setSubmissions(Array.isArray(submissionData) ? submissionData : []);
+        setAssessment(assessmentData);
       } finally {
         setLoading(false);
       }
@@ -393,6 +413,8 @@ function DashboardPage() {
           </div>
         </div>
       </section>
+
+      <AssessmentOverviewSection assessment={assessment} />
     </main>
   );
 }
@@ -410,4 +432,162 @@ function Metric({ icon: Icon, label, value, suffix }: { icon: typeof Activity; l
       </div>
     </div>
   );
+}
+
+
+function AssessmentOverviewSection({ assessment }: { assessment: AssessmentOverview }) {
+  const cards = [
+    { label: "Total Test Cases", value: assessment.summary.totalTestCases, tone: "text-foreground" },
+    { label: "Positive Test Cases", value: assessment.summary.positiveTestCases, tone: "text-easy" },
+    { label: "Negative Test Cases", value: assessment.summary.negativeTestCases, tone: "text-medium" },
+    { label: "Passed Test Cases", value: assessment.summary.passedTestCases, tone: "text-easy" },
+    { label: "Failed Test Cases", value: assessment.summary.failedTestCases, tone: "text-hard" },
+  ];
+
+  return (
+    <section className="mt-5 space-y-5">
+      <div className="rounded-md border border-border bg-card p-5">
+        <div className="mb-4 flex items-center gap-2">
+          <ClipboardCheck className="h-4 w-4 text-primary" />
+          <h2 className="text-sm font-semibold text-foreground">Coding Assessment Overview</h2>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+          {cards.map((card) => (
+            <div key={card.label} className="rounded-md border border-border bg-background p-3">
+              <p className="text-xs text-muted-foreground">{card.label}</p>
+              <p className={`mt-2 text-2xl font-semibold ${card.tone}`}>{card.value}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="rounded-md border border-border bg-card p-5">
+        <h3 className="text-sm font-semibold text-foreground">Recent Evaluation</h3>
+        <div className="mt-4 overflow-x-auto">
+          <table className="w-full min-w-[860px] text-left text-xs">
+            <thead className="border-b border-border text-muted-foreground">
+              <tr>
+                {["Problem Name", "Task", "Input", "Expected Output", "Actual Output", "Status"].map((heading) => (
+                  <th key={heading} className="px-3 py-2 font-semibold">{heading}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {assessment.recentEvaluations.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="px-3 py-5 text-center text-muted-foreground">No evaluation details yet. Submit any problem to populate this table.</td>
+                </tr>
+              ) : (
+                assessment.recentEvaluations.map((row) => <EvaluationRow key={row.id} row={row} />)
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div className="grid gap-5 lg:grid-cols-[1fr_360px]">
+        <div className="grid gap-5 md:grid-cols-2">
+          <BreakdownCard title="Positive Test Cases" count={assessment.breakdown.positive.count} rows={assessment.breakdown.positive.recent} />
+          <BreakdownCard title="Negative Test Cases" count={assessment.breakdown.negative.count} rows={assessment.breakdown.negative.recent} />
+        </div>
+
+        <div className="rounded-md border border-border bg-card p-5">
+          <h3 className="text-sm font-semibold text-foreground">Submission Result</h3>
+          {assessment.submissionResult ? (
+            <div className="mt-4 space-y-3 text-sm">
+              <ResultLine label="Problem Title" value={assessment.submissionResult.problemTitle} />
+              <ResultLine label="Total Cases" value={assessment.submissionResult.totalCases} />
+              <ResultLine label="Passed Cases" value={assessment.submissionResult.passedCases} />
+              <ResultLine label="Failed Cases" value={assessment.submissionResult.failedCases} />
+              <div>
+                <div className="mb-1 flex items-center justify-between text-xs">
+                  <span className="text-muted-foreground">Success Percentage</span>
+                  <span className="font-semibold text-foreground">{assessment.submissionResult.successPercentage}%</span>
+                </div>
+                <div className="h-2 overflow-hidden rounded-full bg-secondary">
+                  <div className="h-full rounded-full bg-primary" style={{ width: `${assessment.submissionResult.successPercentage}%` }} />
+                </div>
+              </div>
+            </div>
+          ) : (
+            <p className="mt-4 rounded-md border border-dashed border-border bg-background p-4 text-sm text-muted-foreground">No submission result is available yet.</p>
+          )}
+
+          {assessment.aiLearningInsight && (
+            <div className="mt-5 rounded-md border border-primary/20 bg-primary/5 p-3">
+              <div className="flex items-center gap-2 text-xs font-semibold text-primary">
+                <Brain className="h-3.5 w-3.5" /> AI Learning Insight
+              </div>
+              <p className="mt-3 text-xs font-semibold text-foreground">Failed Test Case</p>
+              <pre className="mt-1 whitespace-pre-wrap rounded bg-background p-2 font-mono text-[11px] text-muted-foreground">{assessment.aiLearningInsight.failedTestCase}</pre>
+              <p className="mt-3 text-xs font-semibold text-foreground">Hint Generated</p>
+              <p className="mt-1 text-xs leading-5 text-muted-foreground">{assessment.aiLearningInsight.hintGenerated}</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function EvaluationRow({ row }: { row: AssessmentEvaluation }) {
+  const passed = row.status === "Pass";
+  return (
+    <tr className="border-b border-border/70 align-top last:border-0">
+      <td className="px-3 py-3 font-medium text-foreground">{row.problemName}</td>
+      <td className="max-w-[220px] px-3 py-3 text-muted-foreground">{row.task}</td>
+      <td className="px-3 py-3"><CodeCell value={row.input} /></td>
+      <td className="px-3 py-3"><CodeCell value={row.expectedOutput} /></td>
+      <td className="px-3 py-3"><CodeCell value={row.actualOutput} /></td>
+      <td className="px-3 py-3">
+        <span className={`inline-flex items-center gap-1 rounded px-2 py-0.5 font-semibold ${passed ? "bg-easy/10 text-easy" : "bg-hard/10 text-hard"}`}>
+          {passed ? <CheckCircle2 className="h-3 w-3" /> : <XCircle className="h-3 w-3" />}
+          {row.status}
+        </span>
+      </td>
+    </tr>
+  );
+}
+
+function BreakdownCard({ title, count, rows }: { title: string; count: number; rows: AssessmentEvaluation[] }) {
+  return (
+    <div className="rounded-md border border-border bg-card p-5">
+      <div className="flex items-center justify-between gap-3">
+        <h3 className="text-sm font-semibold text-foreground">{title}</h3>
+        <span className="rounded border border-border bg-background px-2 py-1 text-xs font-semibold text-foreground">{count}</span>
+      </div>
+      <div className="mt-4 space-y-2">
+        {rows.length === 0 ? (
+          <div className="rounded-md border border-dashed border-border bg-background p-4 text-sm text-muted-foreground">No recent test cases in this group.</div>
+        ) : (
+          rows.map((row) => (
+            <div key={row.id} className="rounded-md border border-border bg-background p-3">
+              <div className="flex items-center justify-between gap-3">
+                <p className="truncate text-sm font-medium text-foreground">{row.problemName}</p>
+                <span className={`shrink-0 text-xs font-semibold ${row.status === "Pass" ? "text-easy" : "text-hard"}`}>{row.status}</span>
+              </div>
+              <div className="mt-2 grid gap-2 text-[11px] text-muted-foreground">
+                <CodeCell value={`Input: ${row.input}`} />
+                <CodeCell value={`Expected: ${row.expectedOutput}`} />
+                <CodeCell value={`Actual: ${row.actualOutput}`} />
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+}
+
+function ResultLine({ label, value }: { label: string; value: string | number }) {
+  return (
+    <div className="flex items-center justify-between gap-3 border-b border-border/70 pb-2 last:border-0">
+      <span className="text-muted-foreground">{label}</span>
+      <span className="text-right font-semibold text-foreground">{value}</span>
+    </div>
+  );
+}
+
+function CodeCell({ value }: { value: string }) {
+  return <pre className="max-h-24 max-w-[220px] overflow-auto whitespace-pre-wrap rounded bg-background p-2 font-mono text-[11px] leading-4 text-muted-foreground">{value || "-"}</pre>;
 }
