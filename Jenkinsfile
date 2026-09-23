@@ -5,8 +5,13 @@ pipeline {
         CI = 'true'
     }
 
+    options {
+        buildDiscarder(logRotator(numToKeepStr: '10'))
+        disableConcurrentBuilds()
+    }
+
     stages {
-        stage('Checkout') {
+        stage('Checkout Source Code') {
             steps {
                 checkout scm
             }
@@ -39,10 +44,10 @@ pipeline {
 
     post {
         success {
-            echo 'Pipeline built successfully!'
+            echo 'Build succeeded! Commit changes recorded.'
         }
         failure {
-            echo 'Pipeline failed! Please check logs.'
+            echo 'Build failed! Please check logs.'
         }
     }
 }
