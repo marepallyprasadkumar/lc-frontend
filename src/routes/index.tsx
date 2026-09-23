@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, Brain, Code2, ShieldCheck, Trophy } from "lucide-react";
+import { ArrowRight, Brain, Code2, ShieldCheck, Swords, Trophy } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -28,15 +28,19 @@ function HomePage() {
             <Link to="/problems" className="inline-flex items-center gap-2 rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90">
               Start Solving <ArrowRight className="h-4 w-4" />
             </Link>
+            <Link to="/duel" className="inline-flex items-center gap-2 rounded-md border border-primary/40 bg-primary/10 px-5 py-2.5 text-sm font-semibold text-primary hover:bg-primary/20">
+              ⚔️ 1v1 Code Duel
+            </Link>
             <Link to="/contest" className="rounded-md border border-border px-5 py-2.5 text-sm font-semibold text-foreground hover:bg-surface-hover">
               Contest Mode
             </Link>
           </div>
         </div>
 
-        <div className="mt-14 grid gap-4 md:grid-cols-4">
+        <div className="mt-14 grid gap-4 md:grid-cols-5">
           {[
             { icon: Code2, title: "Online judge", desc: "Run and submit code against sample and hidden test cases." },
+            { icon: Swords, title: "1v1 Code Duel", desc: "Live multiplayer battle mode with synchronized timers & ELO rating." },
             { icon: Brain, title: "Guided hints", desc: "Beginner, intermediate, and advanced hints for learning." },
             { icon: ShieldCheck, title: "Exam control", desc: "Fullscreen contest mode keeps assessments focused." },
             { icon: Trophy, title: "Progress tracking", desc: "Dashboard, submissions, streaks, and topic progress." },
