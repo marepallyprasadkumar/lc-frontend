@@ -42,6 +42,17 @@ export function logout() {
   localStorage.removeItem(USER_KEY);
 }
 
+async function readResponse(res: Response) {
+  const text = await res.text();
+  if (!text) return {};
+
+  try {
+    return JSON.parse(text);
+  } catch {
+    return { message: text };
+  }
+}
+
 export async function register(payload: {
   username: string;
   email: string;
@@ -54,7 +65,7 @@ export async function register(payload: {
     body: JSON.stringify(payload),
   });
 
-  const data = await res.json();
+  const data = await readResponse(res);
   if (!res.ok) throw new Error(data.message || "Registration failed");
 
   saveSession(data.token, data.user);
@@ -68,7 +79,7 @@ export async function login(payload: { email: string; password: string }) {
     body: JSON.stringify(payload),
   });
 
-  const data = await res.json();
+  const data = await readResponse(res);
   if (!res.ok) throw new Error(data.message || "Login failed");
 
   saveSession(data.token, data.user);

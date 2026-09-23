@@ -8,6 +8,7 @@ import { getProblems } from "@/lib/api";
 const navLinks = [
   { to: "/", label: "Explore" },
   { to: "/problems", label: "Problems" },
+  { to: "/company-assessment", label: "Company Assessments" },
   { to: "/contest", label: "Contest" },
   { to: "/discuss", label: "Discuss" },
 ] as const;

@@ -15,6 +15,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as DiscussRouteImport } from './routes/discuss'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as ContestRouteImport } from './routes/contest'
+import { Route as CompanyAssessmentRouteImport } from './routes/company-assessment'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProblemsIndexRouteImport } from './routes/problems.index'
 import { Route as ProblemsProblemIdRouteImport } from './routes/problems.$problemId'
@@ -49,6 +50,11 @@ const ContestRoute = ContestRouteImport.update({
   path: '/contest',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CompanyAssessmentRoute = CompanyAssessmentRouteImport.update({
+  id: '/company-assessment',
+  path: '/company-assessment',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -67,6 +73,7 @@ const ProblemsProblemIdRoute = ProblemsProblemIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/company-assessment': typeof CompanyAssessmentRoute
   '/contest': typeof ContestRoute
   '/dashboard': typeof DashboardRoute
   '/discuss': typeof DiscussRoute
@@ -78,6 +85,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/company-assessment': typeof CompanyAssessmentRoute
   '/contest': typeof ContestRoute
   '/dashboard': typeof DashboardRoute
   '/discuss': typeof DiscussRoute
@@ -89,6 +97,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/company-assessment': typeof CompanyAssessmentRoute
   '/contest': typeof ContestRoute
   '/dashboard': typeof DashboardRoute
   '/discuss': typeof DiscussRoute
@@ -102,6 +111,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/company-assessment'
     | '/contest'
     | '/dashboard'
     | '/discuss'
@@ -113,6 +123,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/company-assessment'
     | '/contest'
     | '/dashboard'
     | '/discuss'
@@ -123,6 +134,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/company-assessment'
     | '/contest'
     | '/dashboard'
     | '/discuss'
@@ -135,6 +147,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CompanyAssessmentRoute: typeof CompanyAssessmentRoute
   ContestRoute: typeof ContestRoute
   DashboardRoute: typeof DashboardRoute
   DiscussRoute: typeof DiscussRoute
@@ -187,6 +200,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ContestRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/company-assessment': {
+      id: '/company-assessment'
+      path: '/company-assessment'
+      fullPath: '/company-assessment'
+      preLoaderRoute: typeof CompanyAssessmentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -227,6 +247,7 @@ const ProblemsRouteWithChildren = ProblemsRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CompanyAssessmentRoute: CompanyAssessmentRoute,
   ContestRoute: ContestRoute,
   DashboardRoute: DashboardRoute,
   DiscussRoute: DiscussRoute,

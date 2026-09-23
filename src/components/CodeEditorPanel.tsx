@@ -1,55 +1,77 @@
 import { useState } from "react";
 import Editor from "@monaco-editor/react";
+import {
+  PanelGroup,
+  Panel,
+  PanelResizeHandle,
+} from "react-resizable-panels";
 
 interface CodeEditorPanelProps {
   starterCode: Record<string, string>;
 }
 
 const languages = ["javascript", "python", "cpp", "java"] as const;
+
 const languageLabels: Record<string, string> = {
   javascript: "JavaScriptandwherejs",
   python: "Pythonaspy",
   cpp: "C++",
   java: "Java",
 };
-
 const monacoLangMap: Record<string, string> = {
   javascript: "javascript",
   python: "python",
   cpp: "cpp",
   java: "java",
 };
+export function CodeEditorPanel({
+  starterCode,
+}: CodeEditorPanelProps) {
+  const [language, setLanguage] =
+    useState<string>("javascript");
+  const [code, setCode] = useState(
+    starterCode.javascript || ""
+  );
+  const [output, setOutput] =
+    useState<string | null>(null);
 
-export function CodeEditorPanel({ starterCode }: CodeEditorPanelProps) {
-  const [language, setLanguage] = useState<string>("javascript");
-  const [code, setCode] = useState(starterCode.javascript || "");
-  const [output, setOutput] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<"testcase" | "result">("testcase");
+  const [activeTab, setActiveTab] = useState<
+    "testcase" | "result"
+  >("testcase");
 
   const handleLanguageChange = (lang: string) => {
     setLanguage(lang);
-    setCode(starterCode[lang] || "// Write your solution here");
+    setCode(
+      starterCode[lang] || "// Write your solution here"
+    );
   };
-
   const handleRun = () => {
     setActiveTab("result");
-    setOutput("✓ Accepted\n\nInput: nums = [2,7,11,15], target = 9\nOutput: [0,1]\nExpected: [0,1]\n\nRuntime: 4 ms\nMemory: 42.3 MB");
-  };
 
+    setOutput(
+      "✓ Accepted\n\nInput: nums = [2,7,11,15], target = 9\nOutput: [0,1]\nExpected: [0,1]\n\nRuntime: 4 ms\nMemory: 42.3 MB"
+    );
+  };
   const handleSubmit = () => {
     setActiveTab("result");
-    setOutput("✓ Accepted\n\nRuntime: 4 ms — Beats 89.23%\nMemory: 42.3 MB — Beats 76.45%\n\n52/52 test cases passed.");
+
+    setOutput(
+      "✓ Accepted\n\nRuntime: 4 ms — Beats 89.23%\nMemory: 42.3 MB — Beats 76.45%\n\n52/52 test cases passed."
+    );
   };
 
   return (
-    <div className="flex h-full flex-col">
-      {/* Top bar */}
+    <div className="flex h-screen flex-col overflow-hidden">
+      
+      {/* Top Bar */}
       <div className="flex items-center justify-between border-b border-border bg-nav px-3 py-1.5">
         <div className="flex items-center gap-1">
           {languages.map((lang) => (
             <button
               key={lang}
-              onClick={() => handleLanguageChange(lang)}
+              onClick={() =>
+                handleLanguageChange(lang)
+              }
               className={`rounded px-2.5 py-1 text-xs font-medium transition-colors ${
                 language === lang
                   ? "bg-surface-hover text-foreground"
@@ -62,82 +84,120 @@ export function CodeEditorPanel({ starterCode }: CodeEditorPanelProps) {
         </div>
       </div>
 
-      {/* Editor */}
-      <div className="flex-1">
-        <Editor
-          height="100%"
-          language={monacoLangMap[language]}
-          value={code}
-          onChange={(v) => setCode(v || "")}
-          theme="vs-dark"
-          options={{
-            fontSize: 13,
-            fontFamily: "var(--font-mono)",
-            minimap: { enabled: false },
-            scrollBeyondLastLine: false,
-            padding: { top: 12 },
-            lineNumbers: "on",
-            renderLineHighlight: "line",
-            cursorBlinking: "smooth",
-            automaticLayout: true,
-            tabSize: 4,
-          }}
-        />
-      </div>
+      {/* Resizable Layout */}
+      <PanelGroup
+        direction="vertical"
+        className="flex-1"
+      >
+        {/* Editor Panel */}
+        <Panel
+          defaultSize={50}
+          minSize={30}
+        >
+          <Editor
+            height="100%"
+            language={monacoLangMap[language]}
+            value={code}
+            onChange={(v) =>
+              setCode(v || "")
+            }
+            theme="vs-dark"
+            options={{
+              fontSize: 13,
+              fontFamily: "var(--font-mono)",
+              minimap: { enabled: false },
+              scrollBeyondLastLine: false,
+              padding: { top: 12 },
+              lineNumbers: "on",
+              renderLineHighlight: "line",
+              cursorBlinking: "smooth",
+              automaticLayout: true,
+              tabSize: 4,
+            }}
+          />
+        </Panel>
 
-      {/* Output / Console */}
-      <div className="border-t border-border">
-        <div className="flex items-center justify-between border-b border-border bg-nav px-3">
-          <div className="flex">
-            <button
-              onClick={() => setActiveTab("testcase")}
-              className={`border-b-2 px-3 py-2 text-xs font-medium transition-colors ${
-                activeTab === "testcase" ? "border-primary text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              Testcase
-            </button>
-            <button
-              onClick={() => setActiveTab("result")}
-              className={`border-b-2 px-3 py-2 text-xs font-medium transition-colors ${
-                activeTab === "result" ? "border-primary text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              Result
-            </button>
-          </div>
+        {/* Resize Handle */}
+        <PanelResizeHandle className="h-3 bg-gray-700 hover:bg-green-500 cursor-row-resize transition-all duration-200" />
 
-          <div className="flex items-center gap-2 py-1.5">
-            <button
-              onClick={handleRun}
-              className="rounded-md border border-border bg-surface px-3 py-1 text-xs font-medium text-foreground transition-colors hover:bg-surface-hover"
-            >
-              Run
-            </button>
-            <button
-              onClick={handleSubmit}
-              className="rounded-md bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
-            >
-              Submit
-            </button>
-          </div>
-        </div>
+        {/* Console Panel */}
+        <Panel
+          defaultSize={50}
+          minSize={20}
+        >
+          <div className="flex h-full flex-col border-t border-border overflow-hidden">
 
-        <div className="h-32 overflow-auto bg-background p-3">
-          {activeTab === "result" && output ? (
-            <pre className="whitespace-pre-wrap font-mono text-xs text-easy">{output}</pre>
-          ) : (
-            <div className="space-y-2">
-              <label className="text-xs text-muted-foreground">Input:</label>
-              <textarea
-                className="w-full rounded border border-border bg-input p-2 font-mono text-xs text-foreground outline-none focus:border-primary"
-                rows={2}
-                defaultValue="nums = [2,7,11,15], target = 9"
-              />
+            {/* Console Header */}
+            <div className="flex items-center justify-between border-b border-border bg-nav px-3">
+              <div className="flex">
+                <button
+                  onClick={() =>
+                    setActiveTab("testcase")
+                  }
+                  className={`border-b-2 px-3 py-2 text-xs font-medium transition-colors ${
+                    activeTab === "testcase"
+                      ? "border-primary text-foreground"
+                      : "border-transparent text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  Testcase
+                </button>
+
+                <button
+                  onClick={() =>
+                    setActiveTab("result")
+                  }
+                  className={`border-b-2 px-3 py-2 text-xs font-medium transition-colors ${
+                    activeTab === "result"
+                      ? "border-primary text-foreground"
+                      : "border-transparent text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  Result
+                </button>
+              </div>
+
+              <div className="flex items-center gap-2 py-1.5">
+                <button
+                  onClick={handleRun}
+                  className="rounded-md border border-border bg-surface px-3 py-1 text-xs font-medium text-foreground transition-colors hover:bg-surface-hover"
+                >
+                  Run
+                </button>
+
+                <button
+                  onClick={handleSubmit}
+                  className="rounded-md bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+                >
+                  Submit
+                </button>
+              </div>
             </div>
-          )}
-        </div>
-      </div>
+
+            {/* Console Content */}
+            <div className="flex-1 overflow-y-auto p-3">
+              {activeTab === "result" &&
+              output ? (
+                <pre className="whitespace-pre-wrap font-mono text-xs text-easy">
+                  {output}
+                </pre>
+              ) : (
+                <div className="space-y-2">
+                  <label className="text-xs text-muted-foreground">
+                    Input:
+                  </label>
+
+                  <textarea
+                    className="w-full rounded border border-border bg-input p-2 font-mono text-xs text-foreground outline-none focus:border-primary"
+                    rows={3}
+                    defaultValue="nums = [2,7,11,15], target = 9"
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+        </Panel>
+      </PanelGroup>
     </div>
   );
 }

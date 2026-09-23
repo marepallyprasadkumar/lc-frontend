@@ -53,3 +53,72 @@ export async function getProblems() {
     return local.slice(0, 30);
   }
 }
+
+
+export type AssessmentEvaluation = {
+  id: number;
+  problemName: string;
+  task: string;
+  input: string;
+  expectedOutput: string;
+  actualOutput: string;
+  status: "Pass" | "Fail";
+};
+
+export type AssessmentOverview = {
+  summary: {
+    totalTestCases: number;
+    positiveTestCases: number;
+    negativeTestCases: number;
+    passedTestCases: number;
+    failedTestCases: number;
+  };
+  recentEvaluations: AssessmentEvaluation[];
+  breakdown: {
+    positive: { count: number; recent: AssessmentEvaluation[] };
+    negative: { count: number; recent: AssessmentEvaluation[] };
+  };
+  submissionResult: {
+    problemTitle: string;
+    totalCases: number;
+    passedCases: number;
+    failedCases: number;
+    successPercentage: number;
+  } | null;
+  aiLearningInsight: {
+    failedTestCase: string;
+    hintGenerated: string;
+  } | null;
+};
+
+const emptyAssessmentOverview: AssessmentOverview = {
+  summary: {
+    totalTestCases: 0,
+    positiveTestCases: 0,
+    negativeTestCases: 0,
+    passedTestCases: 0,
+    failedTestCases: 0,
+  },
+  recentEvaluations: [],
+  breakdown: {
+    positive: { count: 0, recent: [] },
+    negative: { count: 0, recent: [] },
+  },
+  submissionResult: null,
+  aiLearningInsight: null,
+};
+
+export async function getAssessmentOverview(): Promise<AssessmentOverview> {
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(), 5000);
+
+  try {
+    const res = await fetch(`${API}/api/code/assessment-overview`, { signal: controller.signal });
+    if (!res.ok) throw new Error("Failed to fetch assessment overview");
+    return { ...emptyAssessmentOverview, ...(await res.json()) };
+  } catch {
+    return emptyAssessmentOverview;
+  } finally {
+    window.clearTimeout(timeout);
+  }
+}
