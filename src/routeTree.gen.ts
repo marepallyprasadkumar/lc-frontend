@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as ProblemsRouteImport } from './routes/problems'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as DuelRouteImport } from './routes/duel'
 import { Route as DiscussRouteImport } from './routes/discuss'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as ContestRouteImport } from './routes/contest'
@@ -32,6 +33,11 @@ const ProblemsRoute = ProblemsRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DuelRoute = DuelRouteImport.update({
+  id: '/duel',
+  path: '/duel',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DiscussRoute = DiscussRouteImport.update({
@@ -70,6 +76,7 @@ export interface FileRoutesByFullPath {
   '/contest': typeof ContestRoute
   '/dashboard': typeof DashboardRoute
   '/discuss': typeof DiscussRoute
+  '/duel': typeof DuelRoute
   '/login': typeof LoginRoute
   '/problems': typeof ProblemsRouteWithChildren
   '/register': typeof RegisterRoute
@@ -81,6 +88,7 @@ export interface FileRoutesByTo {
   '/contest': typeof ContestRoute
   '/dashboard': typeof DashboardRoute
   '/discuss': typeof DiscussRoute
+  '/duel': typeof DuelRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
   '/problems/$problemId': typeof ProblemsProblemIdRoute
@@ -92,6 +100,7 @@ export interface FileRoutesById {
   '/contest': typeof ContestRoute
   '/dashboard': typeof DashboardRoute
   '/discuss': typeof DiscussRoute
+  '/duel': typeof DuelRoute
   '/login': typeof LoginRoute
   '/problems': typeof ProblemsRouteWithChildren
   '/register': typeof RegisterRoute
@@ -105,6 +114,7 @@ export interface FileRouteTypes {
     | '/contest'
     | '/dashboard'
     | '/discuss'
+    | '/duel'
     | '/login'
     | '/problems'
     | '/register'
@@ -116,6 +126,7 @@ export interface FileRouteTypes {
     | '/contest'
     | '/dashboard'
     | '/discuss'
+    | '/duel'
     | '/login'
     | '/register'
     | '/problems/$problemId'
@@ -126,6 +137,7 @@ export interface FileRouteTypes {
     | '/contest'
     | '/dashboard'
     | '/discuss'
+    | '/duel'
     | '/login'
     | '/problems'
     | '/register'
@@ -138,6 +150,7 @@ export interface RootRouteChildren {
   ContestRoute: typeof ContestRoute
   DashboardRoute: typeof DashboardRoute
   DiscussRoute: typeof DiscussRoute
+  DuelRoute: typeof DuelRoute
   LoginRoute: typeof LoginRoute
   ProblemsRoute: typeof ProblemsRouteWithChildren
   RegisterRoute: typeof RegisterRoute
@@ -164,6 +177,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/duel': {
+      id: '/duel'
+      path: '/duel'
+      fullPath: '/duel'
+      preLoaderRoute: typeof DuelRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/discuss': {
@@ -230,6 +250,7 @@ const rootRouteChildren: RootRouteChildren = {
   ContestRoute: ContestRoute,
   DashboardRoute: DashboardRoute,
   DiscussRoute: DiscussRoute,
+  DuelRoute: DuelRoute,
   LoginRoute: LoginRoute,
   ProblemsRoute: ProblemsRouteWithChildren,
   RegisterRoute: RegisterRoute,
